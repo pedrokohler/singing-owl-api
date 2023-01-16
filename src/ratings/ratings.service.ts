@@ -176,28 +176,30 @@ export class RatingsService {
     const standardAggregateRatings =
       this.computeStandardAggregateRatings(ratings);
 
-    return standardAggregateRatings.map((aggregateRating) => {
-      const ownRating = ownRatingsByItemReviewed
-        .filter((ownRating) => ownRating !== null)
-        .find(
-          (rating) =>
-            rating.itemReviewed.id === aggregateRating.itemReviewed.id,
-        );
+    return standardAggregateRatings
+      .map((aggregateRating) => {
+        const ownRating = ownRatingsByItemReviewed
+          .filter((ownRating) => ownRating !== null)
+          .find(
+            (rating) =>
+              rating.itemReviewed.id === aggregateRating.itemReviewed.id,
+          );
 
-      const ratingValue = ownRating
-        ? this.computeAverage([
-            aggregateRating.ratingValue,
-            ownRating.ratingValue,
-          ])
-        : aggregateRating.ratingValue;
+        const ratingValue = ownRating
+          ? this.computeAverage([
+              aggregateRating.ratingValue,
+              ownRating.ratingValue,
+            ])
+          : aggregateRating.ratingValue;
 
-      return {
-        itemReviewed: aggregateRating.itemReviewed,
-        ratingCount: ownRating
-          ? aggregateRating.ratingCount + 1
-          : aggregateRating.ratingCount,
-        ratingValue,
-      };
-    });
+        return {
+          itemReviewed: aggregateRating.itemReviewed,
+          ratingCount: ownRating
+            ? aggregateRating.ratingCount + 1
+            : aggregateRating.ratingCount,
+          ratingValue,
+        };
+      })
+      .sort(this.sortByDescendingRatingValue);
   }
 }

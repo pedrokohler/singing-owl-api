@@ -204,5 +204,77 @@ describe('Compensated rating strategy', () => {
         ]),
       );
     });
+
+    it('should order the aggregate ratings of each item reviewed in a descending order', () => {
+      const firstAuthor = 'author-id';
+      const secondAuthor = 'another-author';
+      const thirdAuthor = 'yet-another-author';
+      const firstItemReviewed = createCreativeWork({
+        owner: firstAuthor,
+      });
+      const secondItemReviewed = createCreativeWork({
+        id: 'another-item',
+        owner: secondAuthor,
+      });
+      const thirdItemReviewed = createCreativeWork({
+        id: 'yet-another-item',
+        owner: thirdAuthor,
+      });
+      const fourthItemReviewed = createCreativeWork({
+        id: 'yet-another-item-again',
+        owner: firstAuthor,
+      });
+
+      const aggregateRatings =
+        ratingsService.computeStandardCompensatedAggregateRatings([
+          {
+            author: firstAuthor,
+            ratingValue: 60,
+            itemReviewed: secondItemReviewed,
+          },
+          {
+            author: firstAuthor,
+            ratingValue: 80,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 50,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 90,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 35,
+            itemReviewed: fourthItemReviewed,
+          },
+        ]);
+      expect(aggregateRatings).toEqual([
+        {
+          itemReviewed: thirdItemReviewed,
+          ratingValue: (80 + 90) / 2,
+          ratingCount: 2,
+        },
+        {
+          itemReviewed: firstItemReviewed,
+          ratingValue: (50 + (60 + 80) / 2) / 2,
+          ratingCount: 2,
+        },
+        {
+          itemReviewed: secondItemReviewed,
+          ratingValue: 59.16, // rounding error
+          ratingCount: 2,
+        },
+        {
+          itemReviewed: fourthItemReviewed,
+          ratingValue: (35 + (60 + 80) / 2) / 2,
+          ratingCount: 2,
+        },
+      ]);
+    });
   });
 });

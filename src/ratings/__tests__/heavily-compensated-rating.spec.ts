@@ -277,5 +277,73 @@ describe('Heavily compensated strategy', () => {
         ]),
       );
     });
+
+    it('should order the aggregate ratings of each item reviewed in a descending order', () => {
+      const firstAuthor = 'author-id';
+      const secondAuthor = 'another-author';
+      const thirdAuthor = 'yet-another-author';
+      const firstItemReviewed = createCreativeWork({
+        owner: firstAuthor,
+      });
+      const secondItemReviewed = createCreativeWork({
+        id: 'another-item',
+        owner: secondAuthor,
+      });
+      const thirdItemReviewed = createCreativeWork({
+        id: 'yet-another-item',
+        owner: thirdAuthor,
+      });
+
+      const aggregateRatings =
+        ratingsService.computeHeavilyCompensatedAggregateRatings([
+          {
+            author: firstAuthor,
+            ratingValue: 40,
+            itemReviewed: secondItemReviewed,
+          },
+          {
+            author: firstAuthor,
+            ratingValue: 20,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 60,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 65,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: thirdAuthor,
+            ratingValue: 50,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: thirdAuthor,
+            ratingValue: 30,
+            itemReviewed: secondItemReviewed,
+          },
+        ]);
+      expect(aggregateRatings).toEqual([
+        {
+          itemReviewed: secondItemReviewed,
+          ratingValue: ((40 + 30) / 2 + (60 + 65) / 2) / 2,
+          ratingCount: 3,
+        },
+        {
+          itemReviewed: firstItemReviewed,
+          ratingValue: ((60 + 50) / 2 + (40 + 20) / 2) / 2,
+          ratingCount: 3,
+        },
+        {
+          itemReviewed: thirdItemReviewed,
+          ratingValue: ((20 + 65) / 2 + (50 + 30) / 2) / 2,
+          ratingCount: 3,
+        },
+      ]);
+    });
   });
 });
