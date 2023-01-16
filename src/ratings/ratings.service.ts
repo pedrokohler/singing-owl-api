@@ -1,16 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-export class Rating {
-  author: string;
-  itemReviewed: string;
-  ratingValue: number;
-}
-
-export class AggregateRating {
-  itemReviewed: string;
-  ratingCount: number;
-  ratingValue: number;
-}
+import { AggregateRating, Rating } from './interfaces';
 
 @Injectable()
 export class RatingsService {
