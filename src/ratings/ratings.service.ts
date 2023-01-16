@@ -139,6 +139,9 @@ export class RatingsService {
         (aggregateRatingGiven) =>
           aggregateRatingGiven.author === itemReviewed.owner,
       );
+
+      if (!aggregateRatingGiven) return null;
+
       return {
         itemReviewed,
         author: itemReviewed.owner,
@@ -149,7 +152,7 @@ export class RatingsService {
 
     return this.computeStandardAggregateRatings([
       ...ratings,
-      ...ownRatingsByItemReviewed,
+      ...ownRatingsByItemReviewed.filter((ownRating) => ownRating !== null),
     ]);
   }
 }
