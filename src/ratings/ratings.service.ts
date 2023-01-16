@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AggregateRating, Rating } from './interfaces';
+import { AggregateRatingGiven } from './interfaces/aggregate-rating-given';
 import { CreativeWork } from './interfaces/creative-work';
 
 @Injectable()
@@ -10,6 +11,20 @@ export class RatingsService {
     const total = ratingValues.reduce((sum, value) => sum + value, 0);
     const average = total / ratingValues.length;
     return parseFloat(average.toFixed(2));
+  }
+
+  private computeAggregateRatingGiven(ratings: Rating[]): AggregateRatingGiven {
+    if (ratings.length < 1) return null;
+
+    const { author } = ratings[0];
+    const ratingValues = ratings.map((rating) => rating.ratingValue);
+    const average = this.computeAverage(ratingValues);
+
+    return {
+      author,
+      ratingCount: ratings.length,
+      ratingValue: average,
+    };
   }
 
   public computeAggregateRating(ratings: Rating[]): AggregateRating {
@@ -24,6 +39,16 @@ export class RatingsService {
       ratingCount: ratings.length,
       ratingValue: average,
     };
+  }
+
+  private filterRatingsByAuthor({
+    ratings,
+    author,
+  }: {
+    ratings: Rating[];
+    author: string;
+  }): Rating[] {
+    return ratings.filter((rating) => rating.author === author);
   }
 
   private filterRatingsByItem({
@@ -78,5 +103,53 @@ export class RatingsService {
     });
 
     return aggregateRatings.sort(this.sortByDescendingRatingValue);
+  }
+
+  private getAggregateRatingGiven({
+    author,
+    ratings,
+  }: {
+    author: string;
+    ratings: Rating[];
+  }): AggregateRatingGiven {
+    const filteredRatings = this.filterRatingsByAuthor({ ratings, author });
+
+    return this.computeAggregateRatingGiven(filteredRatings);
+  }
+
+  public computePenaltyAggregateRatings(ratings: Rating[]): AggregateRating[] {
+    if (ratings.length < 1) return null;
+
+    const uniqueAuthors = Array.from(
+      new Set(ratings.map((rating) => rating.author)),
+    );
+
+    if (uniqueAuthors.length < 2) return null;
+
+    const aggregateRatingsGivenByAuthor = uniqueAuthors.map((author) =>
+      this.getAggregateRatingGiven({ author, ratings }),
+    );
+
+    const uniqueItemsReviewed = this.getUniqueObjectsById(
+      ratings.map((rating) => rating.itemReviewed),
+    );
+
+    const ownRatingsByItemReviewed = uniqueItemsReviewed.map((itemReviewed) => {
+      const aggregateRatingGiven = aggregateRatingsGivenByAuthor.find(
+        (aggregateRatingGiven) =>
+          aggregateRatingGiven.author === itemReviewed.owner,
+      );
+      return {
+        itemReviewed,
+        author: itemReviewed.owner,
+        ratingValue: aggregateRatingGiven.ratingValue,
+        ratingCount: aggregateRatingGiven.ratingCount,
+      } as Rating;
+    });
+
+    return this.computeStandardAggregateRatings([
+      ...ratings,
+      ...ownRatingsByItemReviewed,
+    ]);
   }
 }
