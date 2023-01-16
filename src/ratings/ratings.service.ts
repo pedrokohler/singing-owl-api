@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AggregateRating, Rating } from './interfaces';
+import { CreativeWork } from './interfaces/creative-work';
 
 @Injectable()
 export class RatingsService {
@@ -30,9 +31,11 @@ export class RatingsService {
     itemReviewed,
   }: {
     ratings: Rating[];
-    itemReviewed: string;
+    itemReviewed: CreativeWork;
   }): Rating[] {
-    return ratings.filter((rating) => rating.itemReviewed === itemReviewed);
+    return ratings.filter(
+      (rating) => rating.itemReviewed.id === itemReviewed.id,
+    );
   }
 
   private sortByDescendingRatingValue(a: AggregateRating, b: AggregateRating) {
@@ -47,7 +50,7 @@ export class RatingsService {
     return 0;
   }
 
-  public computeAggregateRatings(ratings: Rating[]): AggregateRating[] {
+  public computeStandardAggregateRatings(ratings: Rating[]): AggregateRating[] {
     if (ratings.length < 1) return null;
 
     const uniqueItemsReviewed = Array.from(

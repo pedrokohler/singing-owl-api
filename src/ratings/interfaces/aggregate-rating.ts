@@ -1,5 +1,7 @@
+import { CreativeWork } from './creative-work';
+
 export class AggregateRating {
-  itemReviewed: string;
+  itemReviewed: CreativeWork;
   ratingCount: number;
   ratingValue: number;
 }
