@@ -71,7 +71,7 @@ describe('Compensated rating strategy', () => {
       );
     });
 
-    it("should compute the aggregate rating in a scenario with author that didn't rate yet", () => {
+    it("should compute the aggregate rating in a scenario with an owner that didn't rate yet", () => {
       const firstAuthor = 'author-id';
       const secondAuthor = 'another-author';
       const thirdAuthor = 'yet-another-author';
