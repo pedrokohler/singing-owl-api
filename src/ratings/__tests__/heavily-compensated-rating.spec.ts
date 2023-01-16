@@ -188,5 +188,94 @@ describe('Heavily compensated strategy', () => {
         ]),
       );
     });
+
+    it('should compute the aggregate rating in a scenario with more items than owners', () => {
+      const firstAuthor = 'author-id';
+      const secondAuthor = 'another-author';
+      const thirdAuthor = 'yet-another-author';
+      const firstItemReviewed = createCreativeWork({
+        owner: firstAuthor,
+      });
+      const secondItemReviewed = createCreativeWork({
+        id: 'another-item',
+        owner: secondAuthor,
+      });
+      const thirdItemReviewed = createCreativeWork({
+        id: 'yet-another-item',
+        owner: thirdAuthor,
+      });
+      const fourthItemReviewed = createCreativeWork({
+        id: 'yet-another-item-again',
+        owner: thirdAuthor,
+      });
+
+      const aggregateRatings =
+        ratingsService.computeHeavilyCompensatedAggregateRatings([
+          {
+            author: firstAuthor,
+            ratingValue: 10,
+            itemReviewed: secondItemReviewed,
+          },
+          {
+            author: firstAuthor,
+            ratingValue: 20,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: firstAuthor,
+            ratingValue: 60,
+            itemReviewed: fourthItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 60,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 70,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 80,
+            itemReviewed: fourthItemReviewed,
+          },
+          {
+            author: thirdAuthor,
+            ratingValue: 50,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: thirdAuthor,
+            ratingValue: 30,
+            itemReviewed: secondItemReviewed,
+          },
+        ]);
+      expect(aggregateRatings).toMatchObject(
+        expect.arrayContaining([
+          {
+            itemReviewed: firstItemReviewed,
+            ratingValue: ((60 + 50) / 2 + (10 + 20 + 60) / 3) / 2,
+            ratingCount: 3,
+          },
+          {
+            itemReviewed: secondItemReviewed,
+            ratingValue: ((10 + 30) / 2 + (60 + 70 + 80) / 3) / 2,
+            ratingCount: 3,
+          },
+          {
+            itemReviewed: thirdItemReviewed,
+            ratingValue: ((20 + 70) / 2 + (50 + 30) / 2) / 2,
+            ratingCount: 3,
+          },
+          {
+            itemReviewed: fourthItemReviewed,
+            ratingValue: ((80 + 60) / 2 + (50 + 30) / 2) / 2,
+            ratingCount: 3,
+          },
+        ]),
+      );
+    });
   });
 });
