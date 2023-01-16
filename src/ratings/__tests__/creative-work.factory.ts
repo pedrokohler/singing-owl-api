@@ -5,6 +5,6 @@ export const createCreativeWork = (
 ): CreativeWork => {
   return {
     id: props?.id ?? 'item-id',
-    author: props?.author ?? 'author-id',
+    owner: props?.owner ?? 'author-id',
   };
 };

@@ -177,5 +177,20 @@ describe('Standard rating strategy', () => {
         },
       ]);
     });
+    it('should work with duplicate items reviewed but with different reference', () => {
+      const author = 'author-id';
+      const aggregateRating = ratingsService.computeStandardAggregateRatings([
+        { author, itemReviewed: createCreativeWork(), ratingValue: 27 },
+        { author, itemReviewed: createCreativeWork(), ratingValue: 12 },
+        { author, itemReviewed: createCreativeWork(), ratingValue: 69 },
+      ]);
+      expect(aggregateRating).toEqual([
+        {
+          itemReviewed: createCreativeWork(),
+          ratingCount: 3,
+          ratingValue: 36,
+        },
+      ]);
+    });
   });
 });

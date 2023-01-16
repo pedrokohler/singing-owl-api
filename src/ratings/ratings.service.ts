@@ -50,11 +50,23 @@ export class RatingsService {
     return 0;
   }
 
+  private getUniqueObjectsById<T extends { id: string }>(
+    objectsWithId: T[],
+  ): T[] {
+    const uniqueIds = Array.from(
+      new Set(objectsWithId.map((objectWithId) => objectWithId.id)),
+    );
+
+    return uniqueIds.map((id) =>
+      objectsWithId.find((object) => object.id === id),
+    );
+  }
+
   public computeStandardAggregateRatings(ratings: Rating[]): AggregateRating[] {
     if (ratings.length < 1) return null;
 
-    const uniqueItemsReviewed = Array.from(
-      new Set(ratings.map((rating) => rating.itemReviewed)),
+    const uniqueItemsReviewed = this.getUniqueObjectsById(
+      ratings.map((rating) => rating.itemReviewed),
     );
 
     const aggregateRatings = uniqueItemsReviewed.map((itemReviewed) => {
