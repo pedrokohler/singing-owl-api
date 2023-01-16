@@ -117,9 +117,7 @@ export class RatingsService {
     return this.computeAggregateRatingGiven(filteredRatings);
   }
 
-  public computeCompensatedAggregateRatings(
-    ratings: Rating[],
-  ): AggregateRating[] {
+  private computeOwnRatingsByItemReviewed(ratings: Rating[]) {
     if (ratings.length < 1) return null;
 
     const uniqueAuthors = Array.from(
@@ -136,7 +134,7 @@ export class RatingsService {
       ratings.map((rating) => rating.itemReviewed),
     );
 
-    const ownRatingsByItemReviewed = uniqueItemsReviewed.map((itemReviewed) => {
+    return uniqueItemsReviewed.map((itemReviewed) => {
       const aggregateRatingGiven = aggregateRatingsGivenByAuthor.find(
         (aggregateRatingGiven) =>
           aggregateRatingGiven.author === itemReviewed.owner,
@@ -151,10 +149,40 @@ export class RatingsService {
         ratingCount: aggregateRatingGiven.ratingCount,
       } as Rating;
     });
+  }
+
+  public computeStandardCompensatedAggregateRatings(
+    ratings: Rating[],
+  ): AggregateRating[] {
+    const ownRatingsByItemReviewed =
+      this.computeOwnRatingsByItemReviewed(ratings);
+
+    if (ownRatingsByItemReviewed === null) return null;
 
     return this.computeStandardAggregateRatings([
       ...ratings,
       ...ownRatingsByItemReviewed.filter((ownRating) => ownRating !== null),
     ]);
+  }
+
+  public computeHeavilyCompensatedAggregateRatings(ratings: Rating[]) {
+    const ownRatingsByItemReviewed =
+      this.computeOwnRatingsByItemReviewed(ratings);
+
+    if (ownRatingsByItemReviewed === null) return null;
+
+    const standardAggregateRatings =
+      this.computeStandardAggregateRatings(ratings);
+
+    return standardAggregateRatings.map((aggregateRating) => {
+      const ownRating = ownRatingsByItemReviewed.find(
+        (rating) => rating.itemReviewed.id === aggregateRating.itemReviewed.id,
+      );
+      return {
+        itemReviewed: aggregateRating.itemReviewed,
+        ratingCount: aggregateRating.ratingCount + 1,
+        ratingValue: (aggregateRating.ratingValue + ownRating.ratingValue) / 2,
+      };
+    });
   }
 }

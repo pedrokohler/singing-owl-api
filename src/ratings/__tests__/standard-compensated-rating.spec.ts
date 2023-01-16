@@ -16,12 +16,12 @@ describe('Compensated rating strategy', () => {
   describe('Given an array of ratings', () => {
     it('should return null if the array is empty', () => {
       const aggregateRatings =
-        ratingsService.computeCompensatedAggregateRatings([]);
+        ratingsService.computeStandardCompensatedAggregateRatings([]);
       expect(aggregateRatings).toBeNull();
     });
     it('should return null in a scenario with one single player', () => {
       const aggregateRatings =
-        ratingsService.computeCompensatedAggregateRatings([
+        ratingsService.computeStandardCompensatedAggregateRatings([
           {
             author: 'author-id',
             ratingValue: 13,
@@ -31,7 +31,7 @@ describe('Compensated rating strategy', () => {
       expect(aggregateRatings).toBeNull();
     });
 
-    it('should compute the aggregate rating in a scenario with two ratings and two items reviewed', () => {
+    it('should compute the aggregate rating in a scenario with two authors and two items reviewed', () => {
       const firstAuthor = 'author-id';
       const secondAuthor = 'another-author';
       const firstItemReviewed = createCreativeWork({
@@ -43,7 +43,7 @@ describe('Compensated rating strategy', () => {
       });
 
       const aggregateRatings =
-        ratingsService.computeCompensatedAggregateRatings([
+        ratingsService.computeStandardCompensatedAggregateRatings([
           {
             author: firstAuthor,
             ratingValue: 60,
@@ -71,16 +71,16 @@ describe('Compensated rating strategy', () => {
       );
     });
 
-    it('should compute the aggregate rating in a scenario with two rating and three items to review', () => {
+    it("should compute the aggregate rating in a scenario with author that didn't rate yet", () => {
       const firstAuthor = 'author-id';
       const secondAuthor = 'another-author';
       const thirdAuthor = 'yet-another-author';
       const firstItemReviewed = createCreativeWork({
-        owner: secondAuthor,
+        owner: firstAuthor,
       });
       const secondItemReviewed = createCreativeWork({
         id: 'another-item',
-        owner: firstAuthor,
+        owner: secondAuthor,
       });
       const thirdItemReviewed = createCreativeWork({
         id: 'yet-another-item',
@@ -88,11 +88,11 @@ describe('Compensated rating strategy', () => {
       });
 
       const aggregateRatings =
-        ratingsService.computeCompensatedAggregateRatings([
+        ratingsService.computeStandardCompensatedAggregateRatings([
           {
             author: firstAuthor,
             ratingValue: 60,
-            itemReviewed: firstItemReviewed,
+            itemReviewed: secondItemReviewed,
           },
           {
             author: firstAuthor,
@@ -102,7 +102,7 @@ describe('Compensated rating strategy', () => {
           {
             author: secondAuthor,
             ratingValue: 50,
-            itemReviewed: secondItemReviewed,
+            itemReviewed: firstItemReviewed,
           },
           {
             author: secondAuthor,
@@ -114,12 +114,12 @@ describe('Compensated rating strategy', () => {
         expect.arrayContaining([
           {
             itemReviewed: firstItemReviewed,
-            ratingValue: (60 + (50 + 90) / 2) / 2,
+            ratingValue: (50 + (60 + 80) / 2) / 2,
             ratingCount: 2,
           },
           {
             itemReviewed: secondItemReviewed,
-            ratingValue: (50 + (60 + 80) / 2) / 2,
+            ratingValue: (60 + (50 + 90) / 2) / 2,
             ratingCount: 2,
           },
           {

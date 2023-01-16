@@ -131,7 +131,7 @@ describe('Standard rating strategy', () => {
         ]),
       );
     });
-    it('should order the aggregate ratings of each item reviewed', () => {
+    it('should order the aggregate ratings of each item reviewed in a descending order', () => {
       const itemReviewed = createCreativeWork();
       const secondItemReviewed = createCreativeWork({ id: 'other-item' });
       const thirdItemReviewed = createCreativeWork({ id: 'yet-another-item' });
