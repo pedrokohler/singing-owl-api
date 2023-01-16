@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RatingsService } from '../ratings.service';
 import { createCreativeWork } from './creative-work.factory';
 
-describe('Penalty rating strategy', () => {
+describe('Compensated rating strategy', () => {
   let ratingsService: RatingsService;
 
   beforeEach(async () => {
@@ -15,19 +15,19 @@ describe('Penalty rating strategy', () => {
 
   describe('Given an array of ratings', () => {
     it('should return null if the array is empty', () => {
-      const aggregateRatings = ratingsService.computePenaltyAggregateRatings(
-        [],
-      );
+      const aggregateRatings =
+        ratingsService.computeCompensatedAggregateRatings([]);
       expect(aggregateRatings).toBeNull();
     });
     it('should return null in a scenario with one single player', () => {
-      const aggregateRatings = ratingsService.computePenaltyAggregateRatings([
-        {
-          author: 'author-id',
-          ratingValue: 13,
-          itemReviewed: createCreativeWork(),
-        },
-      ]);
+      const aggregateRatings =
+        ratingsService.computeCompensatedAggregateRatings([
+          {
+            author: 'author-id',
+            ratingValue: 13,
+            itemReviewed: createCreativeWork(),
+          },
+        ]);
       expect(aggregateRatings).toBeNull();
     });
 
@@ -42,18 +42,19 @@ describe('Penalty rating strategy', () => {
         owner: firstAuthor,
       });
 
-      const aggregateRatings = ratingsService.computePenaltyAggregateRatings([
-        {
-          author: firstAuthor,
-          ratingValue: 60,
-          itemReviewed: firstItemReviewed,
-        },
-        {
-          author: secondAuthor,
-          ratingValue: 20,
-          itemReviewed: secondItemReviewed,
-        },
-      ]);
+      const aggregateRatings =
+        ratingsService.computeCompensatedAggregateRatings([
+          {
+            author: firstAuthor,
+            ratingValue: 60,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 20,
+            itemReviewed: secondItemReviewed,
+          },
+        ]);
       expect(aggregateRatings).toMatchObject(
         expect.arrayContaining([
           {
@@ -86,28 +87,29 @@ describe('Penalty rating strategy', () => {
         owner: thirdAuthor,
       });
 
-      const aggregateRatings = ratingsService.computePenaltyAggregateRatings([
-        {
-          author: firstAuthor,
-          ratingValue: 60,
-          itemReviewed: firstItemReviewed,
-        },
-        {
-          author: firstAuthor,
-          ratingValue: 80,
-          itemReviewed: thirdItemReviewed,
-        },
-        {
-          author: secondAuthor,
-          ratingValue: 50,
-          itemReviewed: secondItemReviewed,
-        },
-        {
-          author: secondAuthor,
-          ratingValue: 90,
-          itemReviewed: thirdItemReviewed,
-        },
-      ]);
+      const aggregateRatings =
+        ratingsService.computeCompensatedAggregateRatings([
+          {
+            author: firstAuthor,
+            ratingValue: 60,
+            itemReviewed: firstItemReviewed,
+          },
+          {
+            author: firstAuthor,
+            ratingValue: 80,
+            itemReviewed: thirdItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 50,
+            itemReviewed: secondItemReviewed,
+          },
+          {
+            author: secondAuthor,
+            ratingValue: 90,
+            itemReviewed: thirdItemReviewed,
+          },
+        ]);
       expect(aggregateRatings).toMatchObject(
         expect.arrayContaining([
           {

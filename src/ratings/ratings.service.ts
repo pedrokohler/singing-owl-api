@@ -117,7 +117,9 @@ export class RatingsService {
     return this.computeAggregateRatingGiven(filteredRatings);
   }
 
-  public computePenaltyAggregateRatings(ratings: Rating[]): AggregateRating[] {
+  public computeCompensatedAggregateRatings(
+    ratings: Rating[],
+  ): AggregateRating[] {
     if (ratings.length < 1) return null;
 
     const uniqueAuthors = Array.from(
