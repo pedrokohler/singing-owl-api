@@ -165,6 +165,32 @@ export class RatingsService {
     ]);
   }
 
+  private compensateAggregateRatingHeavily(ownRatingsByItemReviewed: Rating[]) {
+    return (aggregateRating: AggregateRating) => {
+      const ownRating = ownRatingsByItemReviewed
+        .filter((ownRating) => ownRating !== null)
+        .find(
+          (rating) =>
+            rating.itemReviewed.id === aggregateRating.itemReviewed.id,
+        );
+
+      const ratingValue = ownRating
+        ? this.computeAverage([
+            aggregateRating.ratingValue,
+            ownRating.ratingValue,
+          ])
+        : aggregateRating.ratingValue;
+
+      return {
+        itemReviewed: aggregateRating.itemReviewed,
+        ratingCount: ownRating
+          ? aggregateRating.ratingCount + 1
+          : aggregateRating.ratingCount,
+        ratingValue,
+      };
+    };
+  }
+
   public computeHeavilyCompensatedAggregateRatings(
     ratings: Rating[],
   ): AggregateRating[] {
@@ -177,29 +203,7 @@ export class RatingsService {
       this.computeStandardAggregateRatings(ratings);
 
     return standardAggregateRatings
-      .map((aggregateRating) => {
-        const ownRating = ownRatingsByItemReviewed
-          .filter((ownRating) => ownRating !== null)
-          .find(
-            (rating) =>
-              rating.itemReviewed.id === aggregateRating.itemReviewed.id,
-          );
-
-        const ratingValue = ownRating
-          ? this.computeAverage([
-              aggregateRating.ratingValue,
-              ownRating.ratingValue,
-            ])
-          : aggregateRating.ratingValue;
-
-        return {
-          itemReviewed: aggregateRating.itemReviewed,
-          ratingCount: ownRating
-            ? aggregateRating.ratingCount + 1
-            : aggregateRating.ratingCount,
-          ratingValue,
-        };
-      })
+      .map(this.compensateAggregateRatingHeavily(ownRatingsByItemReviewed))
       .sort(this.sortByDescendingRatingValue);
   }
 }
